@@ -6,7 +6,10 @@ environment = "ue2"
 
 stage = "test"
 
-name = "example"
+name = "betterstack"
 
-example_input = "Hello, world!"
+better_stack_token = ""
+
+better_stack_ingest_host = ""
+
 

@@ -25,3 +25,5 @@ test.log
 *.draft
 *~
 
+# Downloaded files
+logtail-aws-lambda.zip

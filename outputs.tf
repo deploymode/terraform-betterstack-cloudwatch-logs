@@ -1,14 +1,24 @@
-output "id" {
-  description = "ID of the created example"
-  value       = module.this.enabled ? module.this.id : null
+output "lambda_function_arn" {
+  description = "ARN of the created Lambda function"
+  value       = module.lambda.arn
 }
 
-output "example" {
-  description = "Example output"
-  value       = module.this.enabled ? local.example : null
+output "lambda_function_name" {
+  description = "Name of the created Lambda function"
+  value       = module.lambda.function_name
 }
 
-output "random" {
-  description = "Stable random number for this example"
-  value       = module.this.enabled ? join("", random_integer.example[*].result) : null
+output "lambda_invoke_arn" {
+  description = "Invoke ARN of the Lambda function"
+  value       = module.lambda.invoke_arn
+}
+
+output "lambda_role_arn" {
+  description = "ARN of the IAM role associated with the Lambda function"
+  value       = module.lambda.role_arn
+}
+
+output "lambda_log_group_name" {
+  description = "Name of the CloudWatch log group for the Lambda function"
+  value       = module.lambda.cloudwatch_log_group_name
 }

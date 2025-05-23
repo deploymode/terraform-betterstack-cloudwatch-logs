@@ -2,13 +2,13 @@ variable "region" {
   type = string
 }
 
-variable "example_input" {
+variable "better_stack_token" {
+  description = "BetterStack token"
   type        = string
-  description = "The value which will be passed to the example module"
 }
 
-variable "example_input_override" {
+variable "better_stack_ingest_host" {
+  description = "BetterStack ingest host"
   type        = string
-  default     = null
-  description = "Override for `example_input`"
 }
+

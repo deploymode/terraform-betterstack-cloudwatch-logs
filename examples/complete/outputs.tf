@@ -1,14 +1,4 @@
-output "id" {
-  description = "ID of the created example"
-  value       = module.example.id
-}
-
-output "example" {
-  description = "Output \"example\" from example module"
-  value       = module.example.example
-}
-
-output "random" {
-  description = "Output \"random\" from example module"
-  value       = module.example.random
+output "lambda_function_arn" {
+  description = "ARN of the created Lambda function"
+  value       = module.log_forwarder.lambda_function_arn
 }
