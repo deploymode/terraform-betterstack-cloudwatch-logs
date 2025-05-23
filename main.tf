@@ -17,7 +17,7 @@ module "lambda" {
   filename      = data.external.download_and_verify.result["file"]
   function_name = module.this.id
   handler       = "index.handler"
-  runtime       = "nodejs18.x"
+  runtime       = "nodejs22.x"
 
   lambda_environment = {
     variables = {
