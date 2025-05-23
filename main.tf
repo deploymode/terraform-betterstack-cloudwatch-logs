@@ -18,7 +18,8 @@ module "lambda" {
   function_name = module.this.id
   handler       = "index.handler"
   runtime       = "nodejs22.x"
-
+  timeout       = var.timeout
+  memory_size   = var.memory_size
 
   lambda_environment = {
     variables = {
