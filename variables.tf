@@ -16,7 +16,7 @@ variable "better_stack_token" {
 }
 
 variable "better_stack_ingest_host" {
-  description = "BetterStack ingest host"
+  description = "https endpoint for BetterStack ingest host. Prefix with https://"
   type        = string
 }
 

@@ -19,6 +19,7 @@ module "lambda" {
   handler       = "index.handler"
   runtime       = "nodejs22.x"
 
+
   lambda_environment = {
     variables = {
     BETTER_STACK_ENTRYPOINT   = var.better_stack_ingest_host
