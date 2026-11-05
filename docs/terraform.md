@@ -34,7 +34,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional key-value pairs to add to each map in `tags_as_list_of_maps`. Not added to `tags` or `id`.<br/>This is for some rare cases where resources want additional configuration of tags<br/>and therefore take a list of maps with tag key, value, and additional configuration. | `map(string)` | `{}` | no |
-| <a name="input_artefact_filename"></a> [artefact\_filename](#input\_artefact\_filename) | Path to a local Lambda deployment package, for testing a build before publishing it. Conflicts with artefact\_s3\_bucket | `string` | `null` | no |
+| <a name="input_artefact_filename"></a> [artefact\_filename](#input\_artefact\_filename) | Path to a local Lambda deployment package. Conflicts with artefact\_s3\_bucket | `string` | `null` | no |
 | <a name="input_artefact_s3_bucket"></a> [artefact\_s3\_bucket](#input\_artefact\_s3\_bucket) | S3 bucket holding the Lambda deployment package. Must be in the same region as the function. Conflicts with artefact\_filename | `string` | `null` | no |
 | <a name="input_artefact_s3_key"></a> [artefact\_s3\_key](#input\_artefact\_s3\_key) | S3 key of the Lambda deployment package | `string` | `null` | no |
 | <a name="input_artefact_s3_object_version"></a> [artefact\_s3\_object\_version](#input\_artefact\_s3\_object\_version) | S3 object version of the Lambda deployment package. Set to pin the reference against the key being overwritten | `string` | `null` | no |

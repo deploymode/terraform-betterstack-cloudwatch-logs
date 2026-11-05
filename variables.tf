@@ -17,7 +17,7 @@ variable "artefact_s3_object_version" {
 }
 
 variable "artefact_filename" {
-  description = "Path to a local Lambda deployment package, for testing a build before publishing it. Conflicts with artefact_s3_bucket"
+  description = "Path to a local Lambda deployment package. Conflicts with artefact_s3_bucket"
   type        = string
   default     = null
 

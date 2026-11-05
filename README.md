@@ -50,11 +50,10 @@ module creates the function from a deployment package you have already
 published, the IAM role, the invoke permission for CloudWatch Logs, and one
 subscription filter per log group.
 
-The module fetches nothing. Build and publish the package out of band, then
-pass its S3 location. The runtime, handler and architecture defaults describe
+Pass the package as an S3 object or a local zip. The runtime, handler and
+architecture defaults describe
 [Logtail's stock package](https://github.com/logtail/logtail-aws-lambda), so a
-consumer that supplies only an artefact reference and a token gets that
-behaviour.
+consumer that supplies only a package and a token gets that behaviour.
 
 
 
@@ -100,8 +99,8 @@ The log groups in `log_group_names` must already exist at plan time. The module
 reads each one with a data source to build the invoke permission.
 
 Set `artefact_s3_object_version` as well to pin the reference against the key
-being overwritten. For testing a build before publishing it, pass a local zip
-with `artefact_filename` instead of the S3 inputs.
+being overwritten. To use a local zip, set `artefact_filename` and leave the S3
+inputs unset.
 
 `BETTER_STACK_SOURCE_TOKEN` and `BETTER_STACK_ENTRYPOINT` are always set on the
 function. `lambda_environment_variables` is merged over them for
@@ -193,7 +192,7 @@ Available targets:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional key-value pairs to add to each map in `tags_as_list_of_maps`. Not added to `tags` or `id`.<br/>This is for some rare cases where resources want additional configuration of tags<br/>and therefore take a list of maps with tag key, value, and additional configuration. | `map(string)` | `{}` | no |
-| <a name="input_artefact_filename"></a> [artefact\_filename](#input\_artefact\_filename) | Path to a local Lambda deployment package, for testing a build before publishing it. Conflicts with artefact\_s3\_bucket | `string` | `null` | no |
+| <a name="input_artefact_filename"></a> [artefact\_filename](#input\_artefact\_filename) | Path to a local Lambda deployment package. Conflicts with artefact\_s3\_bucket | `string` | `null` | no |
 | <a name="input_artefact_s3_bucket"></a> [artefact\_s3\_bucket](#input\_artefact\_s3\_bucket) | S3 bucket holding the Lambda deployment package. Must be in the same region as the function. Conflicts with artefact\_filename | `string` | `null` | no |
 | <a name="input_artefact_s3_key"></a> [artefact\_s3\_key](#input\_artefact\_s3\_key) | S3 key of the Lambda deployment package | `string` | `null` | no |
 | <a name="input_artefact_s3_object_version"></a> [artefact\_s3\_object\_version](#input\_artefact\_s3\_object\_version) | S3 object version of the Lambda deployment package. Set to pin the reference against the key being overwritten | `string` | `null` | no |
