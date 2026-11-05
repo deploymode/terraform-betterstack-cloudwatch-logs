@@ -106,3 +106,20 @@ variable "reserved_concurrent_executions" {
     error_message = "reserved_concurrent_executions must be -1 (no limit) or greater than zero. Lambda treats 0 as disabling the function; use enabled = false instead."
   }
 }
+
+variable "maximum_retry_attempts" {
+  description = "Retries Lambda makes after a failed asynchronous invocation. CloudWatch Logs invokes asynchronously, so a retry resends the whole batch and duplicates lines the package already delivered. Set 0 to drop a failed batch instead"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.maximum_retry_attempts >= 0 && var.maximum_retry_attempts <= 2
+    error_message = "maximum_retry_attempts must be between 0 and 2."
+  }
+}
+
+variable "cloudwatch_logs_retention_in_days" {
+  description = "Retention in days of the function's own CloudWatch log group"
+  type        = number
+  default     = 14
+}

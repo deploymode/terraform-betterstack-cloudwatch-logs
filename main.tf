@@ -2,12 +2,15 @@ data "aws_region" "current" {}
 
 locals {
   function_log_group_name = "/aws/lambda/${module.this.id}"
+  log_group_names         = module.this.enabled ? var.log_group_names : {}
   better_stack_entrypoint = startswith(var.better_stack_ingest_host, "https://") ? var.better_stack_ingest_host : "https://${var.better_stack_ingest_host}"
 }
 
 module "lambda" {
   source  = "cloudposse/lambda-function/aws"
   version = "0.6.1"
+
+  cloudwatch_logs_retention_in_days = var.cloudwatch_logs_retention_in_days
 
   filename          = var.artefact_filename
   s3_bucket         = var.artefact_s3_bucket
@@ -31,16 +34,25 @@ module "lambda" {
       var.lambda_environment_variables
     )
   }
+
+  context = module.this.context
+}
+
+resource "aws_lambda_function_event_invoke_config" "default" {
+  count = module.this.enabled ? 1 : 0
+
+  function_name          = module.lambda.function_name
+  maximum_retry_attempts = var.maximum_retry_attempts
 }
 
 data "aws_cloudwatch_log_group" "default" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   name = each.value
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_logs" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   action        = "lambda:InvokeFunction"
   function_name = module.lambda.function_name
@@ -49,12 +61,14 @@ resource "aws_lambda_permission" "allow_cloudwatch_logs" {
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "log_subscriptions" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   name            = module.this.id
   log_group_name  = each.value
   filter_pattern  = var.filter_pattern
   destination_arn = module.lambda.arn
+
+  depends_on = [aws_lambda_permission.allow_cloudwatch_logs]
 
   lifecycle {
     precondition {

@@ -115,6 +115,11 @@ Two things fail at apply time:
   makes the function invoke itself on its own output. The module rejects it
   with a precondition.
 
+CloudWatch Logs invokes the function asynchronously, so Lambda retries a failed
+invocation twice by default and resends the whole batch, which duplicates lines
+the package already delivered. Set `maximum_retry_attempts = 0` to drop a failed
+batch instead of retrying it.
+
 `reserved_concurrent_executions` defaults to `-1`, no limit. `0` is rejected
 because it disables the function while leaving the subscriptions in place; use
 `enabled = false` to turn the module off. If you set a limit, alarm on the
@@ -157,7 +162,7 @@ Available targets:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0.0 |
 
 ## Providers
@@ -178,6 +183,7 @@ Available targets:
 | Name | Type |
 |------|------|
 | [aws_cloudwatch_log_subscription_filter.log_subscriptions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_subscription_filter) | resource |
+| [aws_lambda_function_event_invoke_config.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function_event_invoke_config) | resource |
 | [aws_lambda_permission.allow_cloudwatch_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
 | [aws_cloudwatch_log_group.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudwatch_log_group) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
@@ -194,6 +200,7 @@ Available targets:
 | <a name="input_attributes"></a> [attributes](#input\_attributes) | ID element. Additional attributes (e.g. `workers` or `cluster`) to add to `id`,<br/>in the order they appear in the list. New attributes are appended to the<br/>end of the list. The elements of the list are joined by the `delimiter`<br/>and treated as a single ID element. | `list(string)` | `[]` | no |
 | <a name="input_better_stack_ingest_host"></a> [better\_stack\_ingest\_host](#input\_better\_stack\_ingest\_host) | BetterStack ingesting host as shown on the source, without a scheme, e.g. in.example.betterstackdata.com. The module adds https://. A value that already starts with https:// is accepted | `string` | n/a | yes |
 | <a name="input_better_stack_token"></a> [better\_stack\_token](#input\_better\_stack\_token) | BetterStack source token | `string` | n/a | yes |
+| <a name="input_cloudwatch_logs_retention_in_days"></a> [cloudwatch\_logs\_retention\_in\_days](#input\_cloudwatch\_logs\_retention\_in\_days) | Retention in days of the function's own CloudWatch log group | `number` | `14` | no |
 | <a name="input_context"></a> [context](#input\_context) | Single object for setting entire context at once.<br/>See description of individual variables for details.<br/>Leave string and numeric variables as `null` to use default value.<br/>Individual variable settings (non-null) override settings in context object,<br/>except for attributes, tags, and additional\_tag\_map, which are merged. | `any` | <pre>{<br/>  "additional_tag_map": {},<br/>  "attributes": [],<br/>  "delimiter": null,<br/>  "descriptor_formats": {},<br/>  "enabled": true,<br/>  "environment": null,<br/>  "id_length_limit": null,<br/>  "label_key_case": null,<br/>  "label_order": [],<br/>  "label_value_case": null,<br/>  "labels_as_tags": [<br/>    "unset"<br/>  ],<br/>  "name": null,<br/>  "namespace": null,<br/>  "regex_replace_chars": null,<br/>  "stage": null,<br/>  "tags": {},<br/>  "tenant": null<br/>}</pre> | no |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between ID elements.<br/>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | <a name="input_descriptor_formats"></a> [descriptor\_formats](#input\_descriptor\_formats) | Describe additional descriptors to be output in the `descriptors` output map.<br/>Map of maps. Keys are names of descriptors. Values are maps of the form<br/>`{<br/>   format = string<br/>   labels = list(string)<br/>}`<br/>(Type is `any` so the map values can later be enhanced to provide additional options.)<br/>`format` is a Terraform format string to be passed to the `format()` function.<br/>`labels` is a list of labels, in order, to pass to `format()` function.<br/>Label values will be normalized before being passed to `format()` so they will be<br/>identical to how they appear in `id`.<br/>Default is `{}` (`descriptors` output will be empty). | `any` | `{}` | no |
@@ -210,6 +217,7 @@ Available targets:
 | <a name="input_lambda_handler"></a> [lambda\_handler](#input\_lambda\_handler) | Lambda handler. The default describes Logtail's stock package | `string` | `"index.handler"` | no |
 | <a name="input_lambda_runtime"></a> [lambda\_runtime](#input\_lambda\_runtime) | Lambda runtime identifier. The default describes Logtail's stock package | `string` | `"nodejs22.x"` | no |
 | <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | Map of short names to Cloudwatch log group names to subscribe to | `map(string)` | `{}` | no |
+| <a name="input_maximum_retry_attempts"></a> [maximum\_retry\_attempts](#input\_maximum\_retry\_attempts) | Retries Lambda makes after a failed asynchronous invocation. CloudWatch Logs invokes asynchronously, so a retry resends the whole batch and duplicates lines the package already delivered. Set 0 to drop a failed batch instead | `number` | `2` | no |
 | <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | Lambda function memory size in MB | `number` | `128` | no |
 | <a name="input_name"></a> [name](#input\_name) | ID element. Usually the component or solution name, e.g. 'app' or 'jenkins'.<br/>This is the only ID element not also included as a `tag`.<br/>The "name" tag is set to the full `id` string. There is no tag with the value of the `name` input. | `string` | `null` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | ID element. Usually an abbreviation of your organization name, e.g. 'eg' or 'cp', to help ensure generated IDs are globally unique | `string` | `null` | no |
