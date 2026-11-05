@@ -1,5 +1,6 @@
 variable "region" {
-  type = string
+  description = "AWS region"
+  type        = string
 }
 
 variable "artefact_s3_bucket" {
