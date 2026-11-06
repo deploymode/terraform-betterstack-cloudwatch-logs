@@ -10,6 +10,9 @@ resource "aws_cloudwatch_log_group" "default" {
 module "log_forwarder" {
   source = "../.."
 
+  artefact_s3_bucket = var.artefact_s3_bucket
+  artefact_s3_key    = var.artefact_s3_key
+
   better_stack_token       = var.better_stack_token
   better_stack_ingest_host = var.better_stack_ingest_host
 

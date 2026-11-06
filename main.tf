@@ -1,54 +1,79 @@
-data "external" "download_and_verify" {
-  program = ["python3", "${path.module}/scripts/get_package.py"]
-
-  query = {
-    url      = var.package_url
-    checksum = var.package_checksum
-    file_name = "logtail-aws-lambda.zip"
-  }
-}
-
 data "aws_region" "current" {}
+
+locals {
+  function_log_group_name = "/aws/lambda/${module.this.id}"
+  log_group_names         = module.this.enabled ? var.log_group_names : {}
+  better_stack_entrypoint = startswith(var.better_stack_ingest_host, "https://") ? var.better_stack_ingest_host : "https://${var.better_stack_ingest_host}"
+}
 
 module "lambda" {
   source  = "cloudposse/lambda-function/aws"
   version = "0.6.1"
 
-  filename      = data.external.download_and_verify.result["file"]
-  function_name = module.this.id
-  handler       = "index.handler"
-  runtime       = "nodejs22.x"
-  timeout       = var.timeout
-  memory_size   = var.memory_size
+  cloudwatch_logs_retention_in_days = var.cloudwatch_logs_retention_in_days
+
+  filename          = var.artefact_filename
+  s3_bucket         = var.artefact_s3_bucket
+  s3_key            = var.artefact_s3_key
+  s3_object_version = var.artefact_s3_object_version
+
+  function_name                  = module.this.id
+  handler                        = var.lambda_handler
+  runtime                        = var.lambda_runtime
+  architectures                  = var.lambda_architectures
+  timeout                        = var.timeout
+  memory_size                    = var.memory_size
+  reserved_concurrent_executions = var.reserved_concurrent_executions
 
   lambda_environment = {
-    variables = {
-    BETTER_STACK_ENTRYPOINT   = var.better_stack_ingest_host
-    BETTER_STACK_SOURCE_TOKEN = var.better_stack_token
-    }
+    variables = merge(
+      {
+        BETTER_STACK_ENTRYPOINT   = local.better_stack_entrypoint
+        BETTER_STACK_SOURCE_TOKEN = var.better_stack_token
+      },
+      var.lambda_environment_variables
+    )
   }
+
+  context = module.this.context
+}
+
+resource "aws_lambda_function_event_invoke_config" "default" {
+  count = module.this.enabled ? 1 : 0
+
+  function_name          = module.lambda.function_name
+  maximum_retry_attempts = var.maximum_retry_attempts
 }
 
 data "aws_cloudwatch_log_group" "default" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   name = each.value
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_logs" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   action        = "lambda:InvokeFunction"
   function_name = module.lambda.function_name
-  principal     = "logs.${data.aws_region.current.name}.amazonaws.com"
+  principal     = "logs.${data.aws_region.current.region}.amazonaws.com"
   source_arn    = "${data.aws_cloudwatch_log_group.default[each.key].arn}:*"
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "log_subscriptions" {
-  for_each = var.log_group_names
+  for_each = local.log_group_names
 
   name            = module.this.id
   log_group_name  = each.value
-  filter_pattern  = "" # match everything
+  filter_pattern  = var.filter_pattern
   destination_arn = module.lambda.arn
+
+  depends_on = [aws_lambda_permission.allow_cloudwatch_logs]
+
+  lifecycle {
+    precondition {
+      condition     = each.value != local.function_log_group_name
+      error_message = "log_group_names entry \"${each.key}\" is the forwarder's own log group (${local.function_log_group_name}). Subscribing it makes the function invoke itself on its own output."
+    }
+  }
 }
